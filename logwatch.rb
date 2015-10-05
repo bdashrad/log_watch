@@ -47,16 +47,20 @@ class LogWatch
   end
 end
 
-log = LogWatch.new
-@loglines = []
-w3c_log = /\A(?<ip>\S+) (?<identity>\S+) (?<user>\S+) \[(?<time>[^\]]+)\] "(?<verb>[A-Z]+) (?<url>\S+) (?<version>\S+?)" (?<status>\d+) (?<bytes>\S+)/
-log.tail_file(ARGV.first) do |data|
-  unless data.strip == ''
-    logparts = w3c_log.match(data)
-    section = logparts['url'].gsub(/(\/\w+).*/, '\1')
-    logentry = Hash[logparts.names.zip(logparts.captures)]
-    logentry['section'] = section
-    pp logentry
-    @loglines.push(logentry)
+def watch_logs
+  log = LogWatch.new
+  log_format = /\A(?<ip>\S+) (?<identity>\S+) (?<user>\S+) \[(?<time>[^\]]+)\] "(?<verb>[A-Z]+) (?<url>\S+) (?<version>\S+?)" (?<status>\d+) (?<bytes>\S+)/
+  log.tail_file(ARGV.first) do |data|
+    unless data.strip == ''
+      logparts = log_format.match(data)
+      section = logparts['url'].gsub(/(\/\w+).*/, '\1')
+      logentry = Hash[logparts.names.zip(logparts.captures)]
+      logentry['section'] = section
+      pp logentry
+      @loglines.push(logentry)
+    end
   end
 end
+
+@loglines = []
+watch_logs
