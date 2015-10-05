@@ -66,21 +66,28 @@ def watch_logs(log)
       logparts = @log_format.match(data) # match fields
       logentry = Hash[logparts.names.zip(logparts.captures)]
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
-      p logentry
+      # p logentry
       @loglines.push(logentry)
-      count_hits
     end
   end
 end
 
 def count_hits
-  hits = Hash.new{ |h,k| h[k]=0 }
-  p @loglines.length
-  @loglines.each do |log|
-    hits[log['section']] += 1
+  while true
+    hits = Hash.new{ |h,k| h[k]=0 }
+    @loglines.each do |log|
+      hits[log['section']] += 1
+    end
+    unless hits.length == 0
+      p hits
+    end
+    sleep 10
   end
-  p hits
 end
 
 @loglines = []
-watch_logs(LogWatch.new)
+watch_thread = Thread.new { watch_logs(LogWatch.new) }
+stats_thread = Thread.new { count_hits }
+
+watch_thread.join
+stats_thread.join
