@@ -49,24 +49,14 @@ end
 
 log = LogWatch.new
 @loglines = []
+w3c_log = /\A(?<ip>\S+) (?<identity>\S+) (?<user>\S+) \[(?<time>[^\]]+)\] "(?<verb>[A-Z]+) (?<url>\S+) (?<version>\S+?)" (?<status>\d+) (?<bytes>\S+)/
 log.tail_file(ARGV.first) do |data|
   unless data.strip == ''
-    time = data.slice!(/\[.*?\]/)
-    request = data.slice!(/".*"/)
-    ip, identity, username, status, size = data.split
-    verb, path, version = request.gsub(/^"|"$/, '').split
-    logline = { 'ip' => ip,
-                'identity' => identity,
-                'username' => username,
-                'time' => time,
-                'request' => request,
-                'status' => status,
-                'size' => size,
-                'verb' => verb,
-                'path' => path,
-                'version' => version
-              }
-    pp logline
-    @loglines.push(logline)
+    logparts = w3c_log.match(data)
+    section = logparts['url'].gsub(/(\/\w+).*/, '\1')
+    logentry = Hash[logparts.names.zip(logparts.captures)]
+    logentry['section'] = section
+    pp logentry
+    @loglines.push(logentry)
   end
 end
