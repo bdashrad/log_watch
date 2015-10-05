@@ -60,14 +60,12 @@ class LogWatch
   end
 end
 
-def watch_logs
-  log = LogWatch.new
+def watch_logs(log)
   log.tail_file(ARGV.first) do |data|
     unless data.strip == ''
       logparts = @log_format.match(data)
-      section = logparts['url'].gsub(%r{(\/\w+).*}, '\1')
       logentry = Hash[logparts.names.zip(logparts.captures)]
-      logentry['section'] = section
+      logentry['section'] = logparts['url'].gsub(%r{(\/\w+).*}, '\1')
       pp logentry
       @loglines.push(logentry)
     end
@@ -75,4 +73,4 @@ def watch_logs
 end
 
 @loglines = []
-watch_logs
+watch_logs(LogWatch.new)
