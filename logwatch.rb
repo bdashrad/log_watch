@@ -2,6 +2,19 @@ require 'pp'
 require 'rbconfig'
 include RbConfig
 
+@log_format = /
+  \A
+  (?<ip>\S+)\s
+  (?<identity>\S+)\s
+  (?<user>\S+)\s
+  \[(?<time>[^\]]+)\]\s
+  "(?<verb>[A-Z]+)\s
+  (?<url>\S+)\s
+  (?<version>\S+?)"\s
+  (?<status>\d+)\s
+  (?<bytes>\S+)
+/x
+
 # watch w3c logs and alert on chagnes
 class LogWatch
   def initialize
@@ -49,11 +62,10 @@ end
 
 def watch_logs
   log = LogWatch.new
-  log_format = /\A(?<ip>\S+) (?<identity>\S+) (?<user>\S+) \[(?<time>[^\]]+)\] "(?<verb>[A-Z]+) (?<url>\S+) (?<version>\S+?)" (?<status>\d+) (?<bytes>\S+)/
   log.tail_file(ARGV.first) do |data|
     unless data.strip == ''
-      logparts = log_format.match(data)
-      section = logparts['url'].gsub(/(\/\w+).*/, '\1')
+      logparts = @log_format.match(data)
+      section = logparts['url'].gsub(%r{(\/\w+).*}, '\1')
       logentry = Hash[logparts.names.zip(logparts.captures)]
       logentry['section'] = section
       pp logentry
