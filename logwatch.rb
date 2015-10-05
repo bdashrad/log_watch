@@ -50,7 +50,7 @@ end
 log = LogWatch.new
 @loglines = []
 log.tail_file(ARGV.first) do |data|
-  unless data.strip == ""
+  unless data.strip == ''
     time = data.slice!(/\[.*?\]/)
     request = data.slice!(/".*"/)
     ip, identity, username, status, size = data.split
