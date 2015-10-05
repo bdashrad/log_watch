@@ -1,4 +1,3 @@
-require 'pp'
 require 'rbconfig'
 include RbConfig
 
@@ -73,8 +72,8 @@ def watch_logs(log)
 end
 
 def count_hits
-  while true
-    hits = Hash.new{ |h,k| h[k]=0 }
+  loop do
+    hits = Hash.new { |h, k| h[k] = 0 }
     @loglines.each do |log|
       hits[log['section']] += 1
     end
