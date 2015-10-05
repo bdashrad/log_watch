@@ -24,8 +24,7 @@ def tail_dash_f(filename)
     else
       loop do
         changes = file.read
-        unless changes.empty?
-          yield changes
+        unless changes.empty? yield changes
         end
         sleep 1.0
       end
