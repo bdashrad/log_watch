@@ -1,0 +1,16 @@
+language: ruby
+
+cache:
+  bundler: true
+
+rvm:
+  - 2.1.6
+
+notifications:
+  email:
+    - bdashrad@gmail.com
+
+script:
+  - bundle exec rubocop -D
+
+sudo: false
