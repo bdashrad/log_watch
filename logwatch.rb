@@ -31,7 +31,7 @@ class LogWatch
     end
   end
 
-  # open the file and watch with inotify
+  # open the file and watch for changes
   def tail_file(filename)
     open(filename) do |file|
       file.seek(0, IO::SEEK_END)
@@ -62,14 +62,24 @@ end
 
 def watch_logs(log)
   log.tail_file(ARGV.first) do |data|
-    unless data.strip == ''
-      logparts = @log_format.match(data)
+    unless data.strip == '' # don't process blank lines
+      logparts = @log_format.match(data) # match fields
       logentry = Hash[logparts.names.zip(logparts.captures)]
-      logentry['section'] = logparts['url'].gsub(%r{(\/\w+).*}, '\1')
-      pp logentry
+      logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
+      p logentry
       @loglines.push(logentry)
+      count_hits
     end
   end
+end
+
+def count_hits
+  hits = Hash.new{ |h,k| h[k]=0 }
+  p @loglines.length
+  @loglines.each do |log|
+    hits[log['section']] += 1
+  end
+  p hits
 end
 
 @loglines = []
