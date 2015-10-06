@@ -65,7 +65,6 @@ def watch_logs(log)
       logparts = @log_format.match(data) # match fields
       logentry = Hash[logparts.names.zip(logparts.captures)]
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
-      # p logentry
       @loglines.push(logentry)
     end
   end
@@ -77,9 +76,15 @@ def count_hits
     @loglines.each do |log|
       hits[log['section']] += 1
     end
+    system('clear')
     p hits unless hits.length == 0
     sleep 10
   end
+end
+
+def alert_traffic
+  time = Time.now
+  p "High traffic generated an alert - hits = #{value}, triggered at #{time}"
 end
 
 @loglines = []

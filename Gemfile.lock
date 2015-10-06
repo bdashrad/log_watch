@@ -36,6 +36,3 @@ DEPENDENCIES
   rb-inotify (= 0.9.5)
   rb-kqueue (= 0.2.4)
   rubocop (= 0.34.2)
-
-BUNDLED WITH
-   1.10.6
