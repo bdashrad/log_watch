@@ -1,5 +1,3 @@
-ENV['BUNDLE_GEMFILE'] = File.expand_path('../Gemfile', __FILE__)
-
 require 'rbconfig'
 include RbConfig
 
@@ -41,8 +39,7 @@ module LogTailer
         else
           loop do
             changes = file.read
-            unless changes.empty? yield changes
-            end
+            yield changes unless changes.empty?
             sleep 1.0
           end
         end
