@@ -3,8 +3,8 @@ ENV['BUNDLE_GEMFILE'] = File.expand_path('../Gemfile', __FILE__)
 require 'rbconfig'
 include RbConfig
 
-# watch w3c logs and alert on chagnes
 module LogTailer
+  # watch w3c logs and alert on chagnes
   class LogTail
     def initialize
       @os = RbConfig::CONFIG['host_os'] # string with OS name
