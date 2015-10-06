@@ -1,8 +1,14 @@
 require 'rbconfig'
 include RbConfig
 
-require 'rb-kqueue' if RbConfig::CONFIG['host_os'] =~ (/bsd|darwin/i)
-require 'rb-inotify' if RbConfig::CONFIG['host_os'] =~ (/linux/i)
+case RbConfig::CONFIG['host_os']
+when (/bsd|darwin/)
+  puts 'bsd'
+  require 'rb-kqueue'
+when (/linux/)
+  puts 'linux'
+  require 'rb-inotify'
+end
 
 module LogTailer
   # watch w3c logs and alert on chagnes
@@ -16,20 +22,23 @@ module LogTailer
     def tail_file(filename)
       open(filename) do |file|
         file.seek(0, IO::SEEK_END)
-        case @os
-        when (/bsd|darwin/)
+        case RbConfig::CONFIG['host_os']
+        when (/bsd|darwin/i)
+          puts 'kqueue tail'
           queue = KQueue::Queue.new
           queue.watch_file(filename, :extend) do
             yield file.read
           end
           queue.run
         when (/linux/)
+          puts 'inotify tail'
           queue = INotify::Notifier.new
           queue.watch(filename, :modify) do
             yield file.read
           end
           queue.run
         else
+          puts 'default tail'
           loop do
             changes = file.read
             yield changes unless changes.empty?
