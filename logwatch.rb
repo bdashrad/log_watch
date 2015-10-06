@@ -15,7 +15,7 @@ include RbConfig
 /x
 
 # watch w3c logs and alert on chagnes
-class LogWatch
+class LogTail
   def initialize
     @os = RbConfig::CONFIG['host_os'] # string with OS name
     load_os_gems
@@ -92,8 +92,9 @@ def alert_recovery
 end
 
 @loglines = []
-watch_thread = Thread.new { watch_logs(LogWatch.new) }
+watch_thread = Thread.new { watch_logs(LogTail.new) }
 stats_thread = Thread.new { count_hits }
 
+# watch the file and start alerting
 watch_thread.join
 stats_thread.join
