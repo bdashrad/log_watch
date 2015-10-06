@@ -82,9 +82,13 @@ def count_hits
   end
 end
 
-def alert_traffic
+def alert_traffic(hits)
   time = Time.now
-  p "High traffic generated an alert - hits = #{value}, triggered at #{time}"
+  p "High traffic generated an alert - hits = #{hits}, triggered at #{time}"
+end
+
+def alert_recovery
+  p 'Traffic normal'
 end
 
 @loglines = []
