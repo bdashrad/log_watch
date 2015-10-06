@@ -21,6 +21,7 @@ module LogTailer
     end
 
     # open the file and watch for changes
+    # maybe i should use the gem filewatch
     def tail_file(filename)
       open(filename) do |file|
         file.seek(0, IO::SEEK_END)
