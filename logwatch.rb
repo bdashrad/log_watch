@@ -32,7 +32,7 @@ def count_hits
     @loglines.each do |log|
       hits[log['section']] += 1
     end
-    system('clear')
+    # system('clear')
     p hits unless hits.length == 0
     sleep 10
   end
