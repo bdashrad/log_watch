@@ -21,7 +21,7 @@ Or install it yourself as:
 
 ## Usage
 
-logwatch LOGFILE
+    logwatch LOGFILE
 
 ## Development
 
