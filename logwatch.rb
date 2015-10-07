@@ -1,6 +1,4 @@
-require File.expand_path('../lib/logtailer.rb', __FILE__)
-
-include LogTailer
+require_relative 'lib/logtailer'
 
 @log_format = /
   \A
