@@ -1,4 +1,14 @@
-.bundle
-vendor/ruby
+/.bundle/
+/.yardoc
+/Gemfile.lock
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+/vendor/ruby
+
+# test data
 testfile
 test.txt
