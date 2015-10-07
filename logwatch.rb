@@ -1,7 +1,6 @@
 require 'bundler/setup'
 
 $LOAD_PATH.push File.expand_path('../lib', __FILE__)
-require 'logtailer'
 require 'tailer'
 
 @log_format = /
@@ -17,8 +16,8 @@ require 'tailer'
   (?<bytes>\S+)
 /x
 
-def watch_logs(log)
-  log.tail_file(ARGV.first) do |data|
+def watch_logs
+  Tailer.logtail(ARGV.first) do |data|
     unless data.strip == '' # don't process blank lines
       logparts = @log_format.match(data) # match fields
       logentry = Hash[logparts.names.zip(logparts.captures)]
@@ -50,7 +49,7 @@ def alert_recovery
 end
 
 @loglines = []
-watch_thread = Thread.new { watch_logs(LogTail.new) }
+watch_thread = Thread.new { watch_logs }
 stats_thread = Thread.new { count_hits }
 
 # watch the file and start alerting
