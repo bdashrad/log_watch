@@ -6,7 +6,6 @@ module Tailer
   autoload :Bsd, 'tailer/bsd'
   autoload :Linux, 'tailer/linux'
   autoload :Default, 'tailer/default'
-  # autoload :LogTail, 'tailer/log_tail'
 
   def self.logtail(filename)
     case @os
