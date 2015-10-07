@@ -45,7 +45,7 @@ end
 
 # Tail files in BSD with kqueue
 class BSDTail
-  def tail_file(filename)
+  def tail(filename)
     open(filename) do |file|
       file.seek(0, IO::SEEK_END)
       queue = KQueue::Queue.new
@@ -59,7 +59,7 @@ end
 
 # Tail files in Linux with inotify
 class LinuxTail
-  def tail_file(filename)
+  def tail(filename)
     open(filename) do |file|
       file.seek(0, IO::SEEK_END)
       queue = INotify::Notifier.new
@@ -73,7 +73,7 @@ end
 
 # tail files when inotify/kqueue are not available
 class DefaultTail
-  def tail_file(filename)
+  def tail(filename)
     open(filename) do |file|
       file.seek(0, IO::SEEK_END)
       loop do
