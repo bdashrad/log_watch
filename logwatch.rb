@@ -1,4 +1,8 @@
-require_relative 'lib/logtailer'
+require 'bundler/setup'
+
+$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+require 'logtailer'
+require 'tailer'
 
 @log_format = /
   \A
