@@ -42,13 +42,14 @@ module LogWatch
           # save time log was recorded, should use log timestamp instead
           @counter.push(Time.now.getutc.to_i)
           # should probably clean up this array to save on memory
-          @loglines.push(tag_log_data(data))
+          @loglines.push(parse_log_data(data))
         end
       end
     end
 
-    def tag_log_data(data)
-      logparts = @log_format.match(data) # match fields
+    def parse_log_data(data)
+      # match fields
+      logparts = @log_format.match(data)
       logentry = Hash[logparts.names.zip(logparts.captures)]
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
       logentry
