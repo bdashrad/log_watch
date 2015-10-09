@@ -18,15 +18,20 @@ module LogWatch
       # put loglines into empty array
       @loglines = []
       @total_hits = 0
+      @counter = []
+      @alert = false
+      @threshold = 6
     end
 
     def start(filename)
       watch_thread = Thread.new { watch_logs(filename) }
       stats_thread = Thread.new { count_hits }
+      hits_thread = Thread.new { count_hits_2m }
 
       # watch the file and start alerting
       watch_thread.join
       stats_thread.join
+      hits_thread.join
     end
 
     private
@@ -38,7 +43,7 @@ module LogWatch
           logentry = Hash[logparts.names.zip(logparts.captures)]
           logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
           # save time log was recorded, should use log timestamp instead
-          logentry['timestamp'] = Time.now.getutc.to_i
+          @counter.push(Time.now.getutc.to_i)
           @loglines.push(logentry)
           @total_hits += 1
         end
@@ -57,8 +62,26 @@ module LogWatch
       end
     end
 
+    def count_hits_2m
+      loop do
+        # drop hits older than 2m ago
+        @counter.delete_if do |time|
+          time < (Time.now.getutc.to_i - (20))
+        end
+        sleep 1
+        if @counter.length >= @threshold
+          @alert = true
+          alert_traffic(@counter.length)
+        end
+        if @counter.length < @threshold && @alert == true
+          @alert = false
+          alert_recovery
+        end
+      end
+    end
+
     def alert_traffic(hits)
-      time = Time.now
+      time = Time.now.getutc
       p "High traffic generated an alert - hits = #{hits}, triggered at #{time}"
     end
 
