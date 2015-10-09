@@ -37,6 +37,8 @@ module LogWatch
           logparts = @log_format.match(data) # match fields
           logentry = Hash[logparts.names.zip(logparts.captures)]
           logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
+          # save time log was recorded, should use log timestamp instead
+          logentry['timestamp'] = Time.now.getutc.to_i
           @loglines.push(logentry)
           @total_hits += 1
         end
