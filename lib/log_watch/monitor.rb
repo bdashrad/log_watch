@@ -44,8 +44,8 @@ module LogWatch
           logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
           # save time log was recorded, should use log timestamp instead
           @counter.push(Time.now.getutc.to_i)
+          # should probably clean up this array to save on memory
           @loglines.push(logentry)
-          @total_hits += 1
         end
       end
     end
@@ -56,7 +56,11 @@ module LogWatch
         @loglines.each do |log|
           hits[log['section']] += 1
         end
-        p hits unless hits.length == 0
+        unless hits.length == 0
+          p hits
+          p "Hits since start: #{@loglines.length}"
+          p 'alerting' unless @alert == false
+        end
         sleep 10
       end
     end
@@ -67,15 +71,18 @@ module LogWatch
         @counter.delete_if do |time|
           time < (Time.now.getutc.to_i - (20))
         end
+        check_alert
         sleep 1
-        if @counter.length >= @threshold && @alert == false
-          @alert = true
-          alert_traffic(@counter.length)
-        end
-        if @counter.length < @threshold && @alert == true
-          @alert = false
-          alert_recovery(@counter.length)
-        end
+      end
+    end
+
+    def check_alert
+      if @counter.length >= @threshold && @alert == false
+        @alert = true
+        alert_traffic(@counter.length)
+      elsif @counter.length < @threshold && @alert == true
+        @alert = false
+        alert_recovery(@counter.length)
       end
     end
 
