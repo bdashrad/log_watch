@@ -56,7 +56,6 @@ module LogWatch
         @loglines.each do |log|
           hits[log['section']] += 1
         end
-        # system('clear')
         p hits unless hits.length == 0
         sleep 10
       end
@@ -69,13 +68,13 @@ module LogWatch
           time < (Time.now.getutc.to_i - (20))
         end
         sleep 1
-        if @counter.length >= @threshold
+        if @counter.length >= @threshold && @alert == false
           @alert = true
           alert_traffic(@counter.length)
         end
         if @counter.length < @threshold && @alert == true
           @alert = false
-          alert_recovery
+          alert_recovery(@counter.length)
         end
       end
     end
@@ -85,8 +84,9 @@ module LogWatch
       p "High traffic generated an alert - hits = #{hits}, triggered at #{time}"
     end
 
-    def alert_recovery
-      p 'Traffic normal'
+    def alert_recovery(hits)
+      time = Time.now.getutc
+      p "High traffic event over - hits = #{hits}, triggered at #{time}"
     end
   end
 end
