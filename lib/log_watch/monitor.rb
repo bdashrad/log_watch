@@ -17,11 +17,11 @@ module LogWatch
       /x
       # put loglines into empty array
       @loglines = []
-      @total_hits = 0
       @counter = []
       @alert = false
       @threshold = 6
       @alertqueue = []
+      @section_hits = Hash.new { |h, k| h[k] = 0 }
     end
 
     def start(filename)
@@ -58,17 +58,13 @@ module LogWatch
 
     def count_hits
       loop do
-        hits = Hash.new { |h, k| h[k] = 0 }
+        # hits = Hash.new { |h, k| h[k] = 0 }
+        hits = @section_hits
         @loglines.each do |log|
           hits[log['section']] += 1
         end
-        unless hits.length == 0
-          # stats = 'State: CRITICAL | ' unless @alert == false
-          @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
-          stats += "Total Hits: #{@loglines.length} | "
-          stats += "Top Sections: #{hits}"
-          puts stats
-        end
+        show_stats(@section_hits) unless hits.length == 0
+        @loglines = []
         sleep 10
       end
     end
@@ -112,9 +108,18 @@ module LogWatch
     end
 
     def show_alerts
+      puts 'clear'
+      show_stats(@section_hits)
       @alertqueue.each do |alert|
         puts alert
       end
+    end
+
+    def show_stats(hits)
+      # stats = 'State: CRITICAL | ' unless @alert == false
+      @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
+      stats += "Top Sections: #{hits}"
+      puts stats
     end
   end
 end
