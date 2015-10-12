@@ -21,6 +21,7 @@ module LogWatch
       @counter = []
       @alert = false
       @threshold = 6
+      @alertqueue = []
     end
 
     def start(filename)
@@ -62,9 +63,11 @@ module LogWatch
           hits[log['section']] += 1
         end
         unless hits.length == 0
-          p hits
-          p "Hits since start: #{@loglines.length}"
-          p 'alerting' unless @alert == false
+          # stats = 'State: CRITICAL | ' unless @alert == false
+          @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
+          stats += "Total Hits: #{@loglines.length} | "
+          stats += "Top Sections: #{hits}"
+          puts stats
         end
         sleep 10
       end
@@ -75,10 +78,10 @@ module LogWatch
         # drop hits older than 2m ago
         @counter.delete_if do |time|
           # if timestamp is older than 2m drop
-          time < (Time.now.getutc.to_i - (2 * 60))
+          time < (Time.now.getutc.to_i - (20))
         end
         check_alert
-        sleep 1
+        sleep 0.5
       end
     end
 
@@ -93,13 +96,25 @@ module LogWatch
     end
 
     def alert_traffic(hits)
-      time = Time.now.getutc
-      p "High traffic generated an alert - hits = #{hits}, triggered at #{time}"
+      t = Time.now.getutc
+      a = "#{t} | High traffic generated an alert - hits = #{hits}"
+      # p a
+      @alertqueue.push(a)
+      show_alerts
     end
 
     def alert_recovery(hits)
-      time = Time.now.getutc
-      p "High traffic event over - hits = #{hits}, triggered at #{time}"
+      t = Time.now.getutc
+      a = "#{t} | High traffic event over - hits = #{hits}"
+      # p a
+      @alertqueue.push(a)
+      show_alerts
+    end
+
+    def show_alerts
+      @alertqueue.each do |alert|
+        puts alert
+      end
     end
   end
 end
