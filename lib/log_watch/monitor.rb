@@ -20,6 +20,7 @@ module LogWatch
       @counter = []
       @alert = false
       @threshold = 6
+      @total_hits = 0
       @alertqueue = []
       @section_hits = Hash.new { |h, k| h[k] = 0 }
     end
@@ -44,6 +45,7 @@ module LogWatch
           @counter.push(Time.now.getutc.to_i)
           # should probably clean up this array to save on memory
           @loglines.push(parse_log_data(data))
+          @total_hits += 1
         end
       end
     end
@@ -58,12 +60,10 @@ module LogWatch
 
     def count_hits
       loop do
-        # hits = Hash.new { |h, k| h[k] = 0 }
-        hits = @section_hits
         @loglines.each do |log|
-          hits[log['section']] += 1
+          @section_hits[log['section']] += 1
         end
-        show_stats(@section_hits) unless hits.length == 0
+        show_stats(@section_hits) unless @section_hits.length == 0
         @loglines = []
         sleep 10
       end
@@ -74,7 +74,7 @@ module LogWatch
         # drop hits older than 2m ago
         @counter.delete_if do |time|
           # if timestamp is older than 2m drop
-          time < (Time.now.getutc.to_i - (20))
+          time < (Time.now.getutc.to_i - (2 * 60))
         end
         check_alert
         sleep 0.5
@@ -96,7 +96,7 @@ module LogWatch
       a = "#{t} | High traffic generated an alert - hits = #{hits}"
       # p a
       @alertqueue.push(a)
-      show_alerts
+      puts @alertqueue.last
     end
 
     def alert_recovery(hits)
@@ -104,22 +104,24 @@ module LogWatch
       a = "#{t} | High traffic event over - hits = #{hits}"
       # p a
       @alertqueue.push(a)
-      show_alerts
+      puts @alertqueue.last
     end
 
     def show_alerts
-      puts 'clear'
-      show_stats(@section_hits)
       @alertqueue.each do |alert|
         puts alert
       end
     end
 
     def show_stats(hits)
-      # stats = 'State: CRITICAL | ' unless @alert == false
+      system 'clear'
+      # top 5 sections
+      top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
       @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
-      stats += "Top Sections: #{hits}"
+      stats += "Total Hits: #{@total_hits} | "
+      stats += "Top Sections: #{top_hits}"
       puts stats
+      show_alerts
     end
   end
 end
