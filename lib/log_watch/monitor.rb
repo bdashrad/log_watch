@@ -43,7 +43,7 @@ module LogWatch
       Tailer.logtail(filename) do |data|
         unless data.strip == '' # don't process blank lines
           # save time log was recorded, should use log timestamp instead
-          @counter.push(Time.now.getutc.to_i)
+          @counter.push(Time.now.utc.to_i)
           # should probably clean up this array to save on memory
           @loglines.push(parse_log_data(data))
           @total_hits += 1
@@ -72,7 +72,7 @@ module LogWatch
         # drop hits older than 2m ago
         @counter.delete_if do |time|
           # if timestamp is older than 2m drop
-          time < (Time.now.getutc.to_i - (2 * 60))
+          time < (Time.now.utc.to_i - (2 * 60))
         end
         check_alert
         sleep 0.5
@@ -104,8 +104,7 @@ module LogWatch
     def alert_traffic(hits)
       # push a crit into the alerts array and
       # print latest alert so we don't miss any
-      t = Time.now.getutc
-      a = "#{t} | High traffic generated an alert - hits = #{hits}"
+      a = "#{Time.now.utc} | High traffic generated an alert - hits = #{hits}"
       @alertqueue.push(a)
       puts @alertqueue.last
     end
@@ -113,8 +112,7 @@ module LogWatch
     def alert_recovery(hits)
       # push a recovery into the alerts array and
       # print latest alert so we don't miss any
-      t = Time.now.getutc
-      a = "#{t} | High traffic event over - hits = #{hits}"
+      a = "#{Time.now.utc} | High traffic event over - hits = #{hits}"
       @alertqueue.push(a)
       puts @alertqueue.last
     end
@@ -134,9 +132,9 @@ module LogWatch
       top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
       @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
       stats += "Total Hits: #{@total_hits} | "
-      stats += "Top Sections: #{top_hits} | "
-      stats += "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
       puts stats
+      puts "Top Sections: #{top_hits}"
+      puts "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
       show_alerts
     end
   end
