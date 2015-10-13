@@ -3,6 +3,7 @@ module LogWatch
   class Monitor
     def initialize
       # define log format regex
+      # replace with ApacheLogRegex gem?
       @log_format = /
         \A
         (?<ip>\S+)\s
