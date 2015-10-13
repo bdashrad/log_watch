@@ -27,7 +27,7 @@ module LogWatch
 
     def start(filename)
       watch_thread = Thread.new { watch_logs(filename) }
-      stats_thread = Thread.new { count_hits }
+      stats_thread = Thread.new { count_section_hits }
       hits_thread = Thread.new { count_hits_2m }
 
       # watch the file and start alerting
@@ -50,7 +50,7 @@ module LogWatch
       end
     end
 
-    def count_hits
+    def count_section_hits
       loop do
         # lets look what we got so far
         @loglines.each do |log|
@@ -80,7 +80,9 @@ module LogWatch
     def parse_log_data(data)
       # match fields
       logparts = @log_format.match(data)
+      # turn match into a real hash
       logentry = Hash[logparts.names.zip(logparts.captures)]
+      # give section it's own key
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
       logentry
     end
