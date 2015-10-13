@@ -15,12 +15,13 @@ module LogWatch
         (?<status>\d+)\s
         (?<bytes>\S+)
       /x
-      @alert = false # we start off not alerting
-      @alertqueue = [] # a place to hold all of our alerts
-      @counter = [] # how many hits in the last 2 min
       @loglines = [] # put loglines into empty array
+      @counter = [] # how many hits in the last 2 min
+      @alert = false # we start off not alerting
       @threshold = 6 # how many hits per 2 min is ok
       @total_hits = 0 # how many total hits since we started
+      @alertqueue = [] # a place to hold all of our alerts
+      @section_hits = Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
     end
 
     def start(filename)
