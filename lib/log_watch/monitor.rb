@@ -23,6 +23,7 @@ module LogWatch
       @total_hits = 0 # how many total hits since we started
       @alertqueue = [] # a place to hold all of our alerts
       @section_hits = Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
+      @verbs = Hash.new { |h, k| h[k] = 0 } # track HTTP methods
     end
 
     def start(filename)
@@ -56,6 +57,7 @@ module LogWatch
         @loglines.each do |log|
           # add count to each section
           @section_hits[log['section']] += 1
+          @verbs[log['verb']] += 1
         end
         # if we have hits show some stats
         show_stats(@section_hits) unless @section_hits.length == 0
@@ -132,7 +134,8 @@ module LogWatch
       top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
       @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
       stats += "Total Hits: #{@total_hits} | "
-      stats += "Top Sections: #{top_hits}"
+      stats += "Top Sections: #{top_hits} | "
+      stats += "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
       puts stats
       show_alerts
     end
