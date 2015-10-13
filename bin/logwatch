@@ -3,5 +3,6 @@
 require 'log_watch'
 
 system 'clear'
+puts 'STATUS | Total Hits:  | Top Sections:'
 monitor = LogWatch::Monitor.new
 monitor.start(ARGV.first)
