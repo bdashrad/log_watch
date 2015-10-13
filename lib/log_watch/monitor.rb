@@ -50,14 +50,6 @@ module LogWatch
       end
     end
 
-    def parse_log_data(data)
-      # match fields
-      logparts = @log_format.match(data)
-      logentry = Hash[logparts.names.zip(logparts.captures)]
-      logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
-      logentry
-    end
-
     def count_hits
       loop do
         @loglines.each do |log|
@@ -79,6 +71,14 @@ module LogWatch
         check_alert
         sleep 0.5
       end
+    end
+
+    def parse_log_data(data)
+      # match fields
+      logparts = @log_format.match(data)
+      logentry = Hash[logparts.names.zip(logparts.captures)]
+      logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
+      logentry
     end
 
     def check_alert
