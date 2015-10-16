@@ -79,11 +79,11 @@ module LogWatch
       @loglines = []
     end
 
-    def count_hits_2m
+    def count_hits_2m(timenow = Time.now.utc.to_i)
       # drop hits older than 2m ago
       @counter.delete_if do |time|
         # if timestamp is older than 2m drop
-        time < (Time.now.utc.to_i - (2 * 60))
+        time < (timenow - (2 * 60))
       end
     end
 
