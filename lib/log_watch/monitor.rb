@@ -138,7 +138,7 @@ module LogWatch
       # instead of clearing the screen and printing it all over again
       system 'clear'
       @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
-      stats += "Total Hits: #{@total_hits} | "
+      stats += "Total Hits: #{@total_hits}"
       puts stats
       show_stats_sections
       show_stats_methods
@@ -159,6 +159,7 @@ module LogWatch
     end
 
     def show_stats_status
+      # top 5 http status codes
       top_status = @status.sort_by { |_, v| v }.reverse.first(5).to_h
       puts "Top Status: #{top_status}"
     end
