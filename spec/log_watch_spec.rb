@@ -55,7 +55,15 @@ describe LogWatch do
   end
 
   it 'counts section hits' do
-    sections = { '/wow' => 5, '/pages' => 3, '/' => 2, '/yup' => 3, '/yolo' => 2, '/things' => 1 }
+    sections =
+      {
+        '/wow' => 5,
+        '/pages' => 3,
+        '/' => 2,
+        '/yup' => 3,
+        '/yolo' => 2,
+        '/things' => 1
+      }
     @mon.count_section_hits
     expect(@mon.instance_variable_get(:@section_hits)).to eq(sections)
   end
