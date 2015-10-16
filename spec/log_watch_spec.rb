@@ -117,4 +117,6 @@ describe LogWatch do
     @mon.check_alert
     expect(@mon.instance_variable_get(:@alert)).to eq(false)
   end
+
+  # TODO: write more tests
 end
