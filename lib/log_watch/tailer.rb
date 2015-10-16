@@ -8,7 +8,10 @@ module LogWatch
     autoload :Linux, 'log_watch/tailer/linux'
     autoload :Default, 'log_watch/tailer/default'
 
+    @os = RbConfig::CONFIG['host_os']
+
     def self.logtail(filename)
+      p @os
       case @os
       when (/bsd|darwin/i)
         LogWatch::Tailer::Bsd.tail(filename) do |data|
