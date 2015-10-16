@@ -5,6 +5,8 @@ if ENV['COVERAGE']
     add_filter '/vendor'
   end
 
+  require 'log_watch/tailer/default'
+
   @os = RbConfig::CONFIG['host_os']
 
   case @os
@@ -12,8 +14,6 @@ if ENV['COVERAGE']
     require 'log_watch/tailer/bsd'
   when (/linux/)
     require 'log_watch/tailer/linux'
-  else
-    require 'log_watch/tailer/default'
   end
 end
 
