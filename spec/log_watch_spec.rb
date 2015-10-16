@@ -1,12 +1,13 @@
 require 'spec_helper'
 
 describe LogWatch do
+  subject { LogWatch::Monitor.new }
+
   it 'has a version number' do
     expect(LogWatch::VERSION).not_to be nil
   end
 
   before :each do
-    @mon = LogWatch::Monitor.new
     @logdata =
 %(192.168.1.3 - b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 503
 192.168.1.3 i b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
@@ -27,10 +28,10 @@ describe LogWatch do
 
     loglines = []
     @logdata.split("\n").each do |log|
-      loglines.push(@mon.parse_log_data(log))
+      loglines.push(subject.parse_log_data(log))
     end
     # i should rewrite my code to not have to use instance_variable_{get,set}
-    @mon.instance_variable_set(:@loglines, loglines)
+    subject.instance_variable_set(:@loglines, loglines)
 
     counter =
       [
@@ -51,11 +52,11 @@ describe LogWatch do
         1445010224,
         1445010225
       ]
-    @mon.instance_variable_set(:@counter, counter)
+    subject.instance_variable_set(:@counter, counter)
   end
 
   it 'injests log lines' do
-    expect(@mon.instance_variable_get(:@loglines).length).to eq(16)
+    expect(subject.instance_variable_get(:@loglines).length).to eq(16)
   end
 
   it 'parses log lines' do
@@ -72,7 +73,7 @@ describe LogWatch do
       'bytes' => '503',
       'section' => '/wow'
     }
-    log = @mon.parse_log_data(@logdata.split("\n").first)
+    log = subject.parse_log_data(@logdata.split("\n").first)
     expect(log).to eq(parsed_data)
   end
 
@@ -86,37 +87,37 @@ describe LogWatch do
         '/yolo' => 2,
         '/things' => 1
       }
-    @mon.count_section_hits
-    expect(@mon.instance_variable_get(:@section_hits)).to eq(sections)
+    subject.count_section_hits
+    expect(subject.instance_variable_get(:@section_hits)).to eq(sections)
   end
 
   it 'counts http verbs' do
     verbs = { 'POST' => 4, 'GET' => 12 }
-    @mon.count_section_hits
-    expect(@mon.instance_variable_get(:@verbs)).to eq(verbs)
+    subject.count_section_hits
+    expect(subject.instance_variable_get(:@verbs)).to eq(verbs)
   end
 
   it 'counts http status codes' do
     status = { '200' => 11, '503' => 2, '404' => 3 }
-    @mon.count_section_hits
-    expect(@mon.instance_variable_get(:@status)).to eq(status)
+    subject.count_section_hits
+    expect(subject.instance_variable_get(:@status)).to eq(status)
   end
 
   it 'alerts when thresholds are crossed' do
-    @mon.check_alert
-    expect(@mon.instance_variable_get(:@alert)).to eq(true)
+    subject.check_alert
+    expect(subject.instance_variable_get(:@alert)).to eq(true)
   end
 
   it 'deletes count of alerts older than 2 minutes' do
-    @mon.count_hits_2m(1445010341)
-    expect(@mon.instance_variable_get(:@counter).length).to eq(5)
+    subject.count_hits_2m(1445010341)
+    expect(subject.instance_variable_get(:@counter).length).to eq(5)
   end
 
   it 'recovers when thresholds are normal' do
-    @mon.instance_variable_set(:@alert, true)
-    @mon.count_hits_2m(1445010341)
-    @mon.check_alert
-    expect(@mon.instance_variable_get(:@alert)).to eq(false)
+    subject.instance_variable_set(:@alert, true)
+    subject.count_hits_2m(1445010341)
+    subject.check_alert
+    expect(subject.instance_variable_get(:@alert)).to eq(false)
   end
 
   # TODO: write more tests
