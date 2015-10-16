@@ -93,6 +93,7 @@ module LogWatch
       # turn match into a real hash
       logentry = Hash[logparts.names.zip(logparts.captures)]
       # give section it's own key
+      # regex might match files as section name... should revise
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
       logentry
     end
