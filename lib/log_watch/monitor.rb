@@ -16,14 +16,15 @@ module LogWatch
         (?<status>\d+)\s
         (?<bytes>\S+)
       /x
-      @loglines = [] # put loglines into empty array
-      @counter = [] # how many hits in the last 2 min
-      @alert = false # we start off not alerting
-      @threshold = 6 # how many hits per 2 min is ok
-      @total_hits = 0 # how many total hits since we started
-      @alertqueue = [] # a place to hold all of our alerts
-      @section_hits = Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
-      @verbs = Hash.new { |h, k| h[k] = 0 } # track HTTP methods
+      @loglines ||= [] # put loglines into empty array
+      @counter ||= [] # how many hits in the last 2 min
+      @alert ||= false # we start off not alerting
+      @threshold ||= 6 # how many hits per 2 min is ok
+      @total_hits ||= 0 # how many total hits since we started
+      @alertqueue ||= [] # a place to hold all of our alerts
+      @section_hits ||= Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
+      @status ||= Hash.new { |h, k| h[k] =  0 } # track HTTP response codes
+      @verbs ||= Hash.new { |h, k| h[k] = 0 } # track HTTP methods
     end
 
     def start(filename)
@@ -37,7 +38,7 @@ module LogWatch
       hits_thread.join
     end
 
-    private
+    # private
 
     def watch_logs(filename)
       Tailer.logtail(filename) do |data|
@@ -45,7 +46,8 @@ module LogWatch
           # save time log was recorded, should use log timestamp instead
           @counter.push(Time.now.utc.to_i)
           # should probably clean up this array to save on memory
-          @loglines.push(parse_log_data(data))
+          # @loglines.push(parse_log_data(data))
+          parse_log_data(data)
           @total_hits += 1
         end
       end
@@ -58,6 +60,7 @@ module LogWatch
           # add count to each section
           @section_hits[log['section']] += 1
           @verbs[log['verb']] += 1
+          @status[log['status']] += 1
         end
         # if we have hits show some stats
         show_stats(@section_hits) unless @section_hits.length == 0
@@ -86,7 +89,7 @@ module LogWatch
       logentry = Hash[logparts.names.zip(logparts.captures)]
       # give section it's own key
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
-      logentry
+      @loglines.push(logentry)
     end
 
     def check_alert
@@ -135,6 +138,7 @@ module LogWatch
       puts stats
       puts "Top Sections: #{top_hits}"
       puts "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
+      puts "Top Status: #{@status.sort_by { |_, v| v }.reverse.first(5).to_h}}"
       show_alerts
     end
   end
