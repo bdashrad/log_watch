@@ -32,6 +32,8 @@ module LogWatch
       stats_thread = Thread.new do
         loop do
           count_section_hits
+          # if we have hits show some stats
+          show_stats(@section_hits) unless @section_hits.length == 0
           sleep 10
         end
       end
@@ -70,8 +72,8 @@ module LogWatch
         @verbs[log['verb']] += 1
         @status[log['status']] += 1
       end
-      # if we have hits show some stats
-      show_stats(@section_hits) unless @section_hits.length == 0
+      # # if we have hits show some stats
+      # show_stats(@section_hits) unless @section_hits.length == 0
       # reset current hits
       @loglines = []
     end
@@ -135,10 +137,12 @@ module LogWatch
       # shuold probably do this all in ncurses or something
       # instead of clearing the screen and printing it all over again
       system 'clear'
-      # @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
+      # top 5 sections
+      top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
+      @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
       stats += "Total Hits: #{@total_hits} | "
       puts stats
-      puts "Top Sections: #{hits.sort_by { |_, v| v }.reverse.first(5).to_h}"
+      puts "Top Sections: #{top_hits}"
       puts "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
       puts "Top Status: #{@status.sort_by { |_, v| v }.reverse.first(5).to_h}"
       show_alerts
