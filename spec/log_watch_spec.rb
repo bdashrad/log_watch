@@ -7,56 +7,68 @@ describe LogWatch do
 
   before :each do
     @mon = LogWatch::Monitor.new
-    @logdata = %(192.168.1.3 ident brad [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
-192.168.1.3 ident brad [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
-192.168.1.3 ident brad [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
-192.168.1.3 ident brad [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
-127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /pages/apache_pb.gif HTTP/1.0" 200 2326
+    @logdata =
+%(192.168.1.3 - b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 503
+192.168.1.3 i b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
+192.168.1.3 i b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
+192.168.1.3 i b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
+127.0.0.1 - fr [10/Oct/2000:13:55:36 -0700] "GET /pages/pb.gif HTTP/1.0" 200 26
 192.168.1.3 - - [18/Feb/2000:13:33:37 -0600] "GET / HTTP/1.0" 200 5073
-127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /pages/apache_pb.gif HTTP/1.0" 200 2326
+127.0.0.1 - f [10/Oct/2000:13:55:36 -0700] "GET /pages/pb.gif HTTP/1.0" 200 2326
 192.168.1.3 - - [18/Feb/2000:13:33:37 -0600] "GET / HTTP/1.0" 200 5073
-127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] "GET /wow/apache_pb.gif HTTP/1.0" 200 2326
+127.0.0.1 - f [10/Oct/2000:13:55:36 -0700] "GET /wow/pb.gif HTTP/1.0" 200 2326
 192.168.1.3 - - [18/Feb/2000:13:33:37 -0600] "GET /yup HTTP/1.0" 200 5073
 192.168.1.3 ident brad [18/Feb/5030:13:33:37 -0600] "GET /yup HTTP/1.0" 503 5073
 192.168.1.3 ident brad [18/Feb/5030:13:33:37 -0600] "GET /yup HTTP/1.0" 503 5073
-192.168.1.3 ident brad [18/Feb/2000:13:33:37 -0600] "GET /pages/stuf/yup HTTP/1.0" 200 5073
-192.168.1.3 ident brad [18/Feb/4040:13:33:37 -0600] "GET /yolo/swag HTTP/1.0" 404 5073
-192.168.1.3 ident brad [18/Feb/4040:13:33:37 -0600] "GET /yolo/swag HTTP/1.0" 404 5073
-192.168.1.3 ident brad [18/Feb/4040:13:33:37 -0600] "GET /things/yolo/swag HTTP/1.0" 404 5073)
+192.168.1.3 - - [18/Feb/2000:13:33:37 -0600] "GET /pages/yup HTTP/1.0" 200 5073
+192.168.1.3 - - [18/Feb/4040:13:33:37 -0600] "GET /yolo/swag HTTP/1.0" 404 5073
+192.168.1.3 - - [18/Feb/4040:13:33:37 -0600] "GET /yolo/swag HTTP/1.0" 404 5073
+192.168.1.3 - - [18/Feb/4040:13:33:37 -0600] "GET /things/ag HTTP/1.0" 404 5073)
 
-    # @loglines = [
-    #   {
-    #     'ip' => '192.168.1.3',
-    #     'identity' => 'ident',
-    #     'user' => 'brad',
-    #     'time' => '18/Feb/2000:13:33:37 -0600',
-    #     'verb' => 'POST',
-    #     'url' => '/wow/swag',
-    #     'version' => 'HTTP/1.0',
-    #     'status' => '200',
-    #     'bytes' => '5073',
-    #     'section' => '/wow'
-    #   },
-    #   {
-    #     'ip' => '192.168.1.3',
-    #     'identity' => 'ident',
-    #     'user' => 'brad',
-    #     'time' => '18/Feb/2000:13:33:37
-    #     -0600',
-    #     'verb' => 'POST',
-    #     'url' => '/yolo/swag',
-    #     'version' => 'HTTP/1.0',
-    #     'status' => '200',
-    #     'bytes' => '5073',
-    #     'section' => '/yolo'
-    #   }
-    # ]
+    loglines = []
+    @logdata.split("\n").each do |log|
+      loglines.push(@mon.parse_log_data(log))
+    end
+    @mon.instance_variable_set(:@loglines, loglines)
   end
 
   it 'injests log lines' do
-    @logdata.split("\n").each do |log|
-      @mon.parse_log_data(log)
-    end
     expect(@mon.instance_variable_get(:@loglines).length).to eq(16)
+  end
+
+  it 'parses log lines' do
+    parsed_data =
+    {
+      'ip' => '192.168.1.3',
+      'identity' => '-',
+      'user' => 'b',
+      'time' => '18/Feb/2000:13:33:37 -0600',
+      'verb' => 'POST',
+      'url' => '/wow/swag',
+      'version' => 'HTTP/1.0',
+      'status' => '200',
+      'bytes' => '503',
+      'section' => '/wow'
+    }
+    log = @mon.parse_log_data(@logdata.split("\n").first)
+    expect(log).to eq(parsed_data)
+  end
+
+  it 'counts section hits' do
+    sections = { '/wow' => 5, '/pages' => 3, '/' => 2, '/yup' => 3, '/yolo' => 2, '/things' => 1 }
+    @mon.count_section_hits
+    expect(@mon.instance_variable_get(:@section_hits)).to eq(sections)
+  end
+
+  it 'counts http verbs' do
+    verbs = { 'POST' => 4, 'GET' => 12 }
+    @mon.count_section_hits
+    expect(@mon.instance_variable_get(:@verbs)).to eq(verbs)
+  end
+
+  it 'counts http status codes' do
+    status = { '200' => 11, '503' => 2, '404' => 3 }
+    @mon.count_section_hits
+    expect(@mon.instance_variable_get(:@status)).to eq(status)
   end
 end
