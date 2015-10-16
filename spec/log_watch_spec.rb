@@ -29,6 +29,7 @@ describe LogWatch do
     @logdata.split("\n").each do |log|
       loglines.push(@mon.parse_log_data(log))
     end
+    # i should rewrite my code to not have to use instance_variable_{get,set}
     @mon.instance_variable_set(:@loglines, loglines)
 
     counter =
