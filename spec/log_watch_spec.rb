@@ -8,6 +8,7 @@ describe LogWatch do
   end
 
   before :each do
+    # should be testing the tailer module here instead...
     @logdata =
 %(192.168.1.3 - b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 503
 192.168.1.3 i b [18/Feb/2000:13:33:37 -0600] "POST /wow/swag HTTP/1.0" 200 5073
