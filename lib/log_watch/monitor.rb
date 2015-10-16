@@ -16,15 +16,15 @@ module LogWatch
         (?<status>\d+)\s
         (?<bytes>\S+)
       /x
-      @loglines ||= [] # put loglines into empty array
-      @counter ||= [] # how many hits in the last 2 min
-      @alert ||= false # we start off not alerting
-      @threshold ||= 6 # how many hits per 2 min is ok
-      @total_hits ||= 0 # how many total hits since we started
-      @alertqueue ||= [] # a place to hold all of our alerts
-      @section_hits ||= Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
-      @status ||= Hash.new { |h, k| h[k] =  0 } # track HTTP response codes
-      @verbs ||= Hash.new { |h, k| h[k] = 0 } # track HTTP methods
+      @loglines = [] # put loglines into empty array
+      @counter = [] # how many hits in the last 2 min
+      @alert = false # we start off not alerting
+      @threshold = 6 # how many hits per 2 min is ok
+      @total_hits = 0 # how many total hits since we started
+      @alertqueue = [] # a place to hold all of our alerts
+      @section_hits = Hash.new { |h, k| h[k] = 0 } # start all secitons at 0
+      @status = Hash.new { |h, k| h[k] =  0 } # track HTTP response codes
+      @verbs = Hash.new { |h, k| h[k] = 0 } # track HTTP methods
     end
 
     def start(filename)
