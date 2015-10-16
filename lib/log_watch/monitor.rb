@@ -125,14 +125,6 @@ module LogWatch
       puts @alertqueue.last
     end
 
-    def show_alerts
-      # print all alerts we've had so far
-      puts '--- ALERTS ---'
-      @alertqueue.each do |alert|
-        puts alert
-      end
-    end
-
     def show_stats
       # shuold probably do this all in ncurses or something
       # instead of clearing the screen and printing it all over again
@@ -162,6 +154,14 @@ module LogWatch
       # top 5 http status codes
       top_status = @status.sort_by { |_, v| v }.reverse.first(5).to_h
       puts "Top Status: #{top_status}"
+    end
+
+    def show_alerts
+      # print all alerts we've had so far
+      puts '--- ALERTS ---'
+      @alertqueue.each do |alert|
+        puts alert
+      end
     end
   end
 end
