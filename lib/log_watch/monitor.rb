@@ -33,13 +33,14 @@ module LogWatch
         loop do
           count_section_hits
           # if we have hits show some stats
-          show_stats(@section_hits) unless @section_hits.length == 0
+          show_stats unless @section_hits.length == 0
           sleep 10
         end
       end
       hits_thread = Thread.new do
         loop do
           count_hits_2m
+          check_alert
           sleep 0.5
         end
       end
@@ -84,7 +85,6 @@ module LogWatch
         # if timestamp is older than 2m drop
         time < (Time.now.utc.to_i - (2 * 60))
       end
-      check_alert
     end
 
     def parse_log_data(data)
@@ -133,19 +133,34 @@ module LogWatch
       end
     end
 
-    def show_stats(hits)
+    def show_stats
       # shuold probably do this all in ncurses or something
       # instead of clearing the screen and printing it all over again
       system 'clear'
-      # top 5 sections
-      top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
       @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
       stats += "Total Hits: #{@total_hits} | "
       puts stats
-      puts "Top Sections: #{top_hits}"
-      puts "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
-      puts "Top Status: #{@status.sort_by { |_, v| v }.reverse.first(5).to_h}"
+      show_stats_sections
+      show_stats_methods
+      show_stats_status
       show_alerts
+    end
+
+    def show_stats_sections
+      # top 5 sections
+      top_hits = @section_hits.sort_by { |_, v| v }.reverse.first(5).to_h
+      puts "Top Sections: #{top_hits}"
+    end
+
+    def show_stats_methods
+      # top five http methods
+      top_methods = @verbs.sort_by { |_, v| v }.reverse.first(5).to_h
+      puts "Top Methods: #{top_methods}"
+    end
+
+    def show_stats_status
+      top_status = @status.sort_by { |_, v| v }.reverse.first(5).to_h
+      puts "Top Status: #{top_status}"
     end
   end
 end
