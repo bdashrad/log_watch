@@ -30,6 +30,27 @@ describe LogWatch do
       loglines.push(@mon.parse_log_data(log))
     end
     @mon.instance_variable_set(:@loglines, loglines)
+
+    counter =
+      [
+        1445010210,
+        1445010211,
+        1445010212,
+        1445010213,
+        1445010214,
+        1445010215,
+        1445010216,
+        1445010217,
+        1445010218,
+        1445010219,
+        1445010220,
+        1445010221,
+        1445010222,
+        1445010223,
+        1445010224,
+        1445010225
+      ]
+    @mon.instance_variable_set(:@counter, counter)
   end
 
   it 'injests log lines' do
@@ -78,5 +99,22 @@ describe LogWatch do
     status = { '200' => 11, '503' => 2, '404' => 3 }
     @mon.count_section_hits
     expect(@mon.instance_variable_get(:@status)).to eq(status)
+  end
+
+  it 'alerts when thresholds are crossed' do
+    @mon.check_alert
+    expect(@mon.instance_variable_get(:@alert)).to eq(true)
+  end
+
+  it 'deletes count of alerts older than 2 minutes' do
+    @mon.count_hits_2m(1445010341)
+    expect(@mon.instance_variable_get(:@counter).length).to eq(5)
+  end
+
+  it 'recovers when thresholds are normal' do
+    @mon.instance_variable_set(:@alert, true)
+    @mon.count_hits_2m(1445010341)
+    @mon.check_alert
+    expect(@mon.instance_variable_get(:@alert)).to eq(false)
   end
 end
