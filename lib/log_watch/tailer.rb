@@ -11,7 +11,6 @@ module LogWatch
     @os = RbConfig::CONFIG['host_os']
 
     def self.logtail(filename)
-      p @os
       case @os
       when (/bsd|darwin/i)
         LogWatch::Tailer::Bsd.tail(filename) do |data|
