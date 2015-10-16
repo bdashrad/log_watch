@@ -10,5 +10,6 @@ rvm:
 
 script:
   - bundle exec rubocop -D
+  - bundle exec rspec spec
 
 sudo: false
