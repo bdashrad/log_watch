@@ -29,8 +29,18 @@ module LogWatch
 
     def start(filename)
       watch_thread = Thread.new { watch_logs(filename) }
-      stats_thread = Thread.new { count_section_hits }
-      hits_thread = Thread.new { count_hits_2m }
+      stats_thread = Thread.new do
+        loop do
+          count_section_hits
+          sleep 10
+        end
+      end
+      hits_thread = Thread.new do
+        loop do
+          count_hits_2m
+          sleep 0.5
+        end
+      end
 
       # watch the file and start alerting
       watch_thread.join
@@ -46,40 +56,33 @@ module LogWatch
           # save time log was recorded, should use log timestamp instead
           @counter.push(Time.now.utc.to_i)
           # should probably clean up this array to save on memory
-          # @loglines.push(parse_log_data(data))
-          parse_log_data(data)
+          @loglines.push(parse_log_data(data))
           @total_hits += 1
         end
       end
     end
 
     def count_section_hits
-      loop do
-        # lets look what we got so far
-        @loglines.each do |log|
-          # add count to each section
-          @section_hits[log['section']] += 1
-          @verbs[log['verb']] += 1
-          @status[log['status']] += 1
-        end
-        # if we have hits show some stats
-        show_stats(@section_hits) unless @section_hits.length == 0
-        # reset current hits
-        @loglines = []
-        sleep 10
+      # lets look what we got so far
+      @loglines.each do |log|
+        # add count to each section
+        @section_hits[log['section']] += 1
+        @verbs[log['verb']] += 1
+        @status[log['status']] += 1
       end
+      # if we have hits show some stats
+      show_stats(@section_hits) unless @section_hits.length == 0
+      # reset current hits
+      @loglines = []
     end
 
     def count_hits_2m
-      loop do
-        # drop hits older than 2m ago
-        @counter.delete_if do |time|
-          # if timestamp is older than 2m drop
-          time < (Time.now.utc.to_i - (2 * 60))
-        end
-        check_alert
-        sleep 0.5
+      # drop hits older than 2m ago
+      @counter.delete_if do |time|
+        # if timestamp is older than 2m drop
+        time < (Time.now.utc.to_i - (2 * 60))
       end
+      check_alert
     end
 
     def parse_log_data(data)
@@ -89,7 +92,7 @@ module LogWatch
       logentry = Hash[logparts.names.zip(logparts.captures)]
       # give section it's own key
       logentry['section'] = logparts['url'].gsub(%r{((?<!:/)\/\w+).*}, '\1')
-      @loglines.push(logentry)
+      logentry
     end
 
     def check_alert
@@ -122,6 +125,7 @@ module LogWatch
 
     def show_alerts
       # print all alerts we've had so far
+      puts '--- ALERTS ---'
       @alertqueue.each do |alert|
         puts alert
       end
@@ -131,14 +135,12 @@ module LogWatch
       # shuold probably do this all in ncurses or something
       # instead of clearing the screen and printing it all over again
       system 'clear'
-      # top 5 sections
-      top_hits = hits.sort_by { |_, v| v }.reverse.first(5).to_h
-      @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
+      # @alert == false ? stats = 'NORMAL | ' : stats = 'CRITICAL | '
       stats += "Total Hits: #{@total_hits} | "
       puts stats
-      puts "Top Sections: #{top_hits}"
+      puts "Top Sections: #{hits.sort_by { |_, v| v }.reverse.first(5).to_h}"
       puts "Top Methods: #{@verbs.sort_by { |_, v| v }.reverse.first(5).to_h}"
-      puts "Top Status: #{@status.sort_by { |_, v| v }.reverse.first(5).to_h}}"
+      puts "Top Status: #{@status.sort_by { |_, v| v }.reverse.first(5).to_h}"
       show_alerts
     end
   end
