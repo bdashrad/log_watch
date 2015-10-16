@@ -15,5 +15,9 @@ task :install do
 end
 
 task :spec do
-  sh bundle exec rspec spec
+  sh 'bundle exec rspec spec'
+end
+
+task :coverage do
+  sh 'COVERAGE=1 bundle exec rspec spec'
 end
